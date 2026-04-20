@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>RaktSetu — Blood Bridge Management System</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --red:#C62828;--red-dark:#7A0010;--red-glow:#FF2244;
+  --cream:#FFF8F0;--ink:#1A0A0A;--muted:#8A6060;
+  --card:#FFFAFA;--card-hover:#FFF0F0;--border:#F0D0D0;
+  --green:#1B7A42;--amber:#C07000;--blue:#1565C0;
+  --surface:#FFFFFF;--surface2:#FDF6F0;
+  --radius:10px;--radius-lg:14px;
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.04);
+  --shadow-md:0 4px 16px rgba(0,0,0,0.06);
+  --shadow-lg:0 8px 32px rgba(192,21,42,0.1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--cream);color:var(--ink);font-family:'DM Sans',system-ui,sans-serif;min-height:100vh;overflow-x:hidden}
+
+header{
+  background:linear-gradient(135deg,#2D0008 0%,var(--red-dark) 40%,#4A0012 100%);
+  color:#fff;padding:0 2rem;display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;
+  box-shadow:0 4px 24px rgba(192,21,42,0.35);
+  border-bottom:1px solid rgba(255,100,100,0.15);
+}
+.logo{font-family:'Playfair Display',serif;font-size:1.7rem;font-weight:900;letter-spacing:1.5px;display:flex;align-items:center;gap:.5rem;padding:.65rem 0}
+.logo span{color:#FF9090}
+.logo-drop{font-size:1.6rem;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1);filter:drop-shadow(0 0 3px #ff4444)}50%{transform:scale(1.15);filter:drop-shadow(0 0 10px #ff0000)}}
+nav{display:flex;gap:5px}
+nav button{
+  background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);
+  color:rgba(255,255,255,0.8);padding:.5rem 1rem;border-radius:8px;cursor:pointer;
+  font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:500;transition:all .2s;letter-spacing:.3px;
+}
+nav button:hover{background:rgba(255,255,255,0.12);color:#fff}
+nav button.active{background:var(--red);border-color:var(--red-glow);color:#fff;box-shadow:0 0 16px rgba(255,34,68,0.4)}
+.tag{font-size:.6rem;background:var(--red-glow);color:#fff;padding:2px 6px;border-radius:4px;vertical-align:middle;margin-left:4px;font-weight:600;letter-spacing:.5px}
+
+.hero{
+  background:linear-gradient(135deg,#2D0008 0%,var(--red-dark) 50%,#1A0008 100%);
+  color:#fff;padding:3.5rem 2rem 3rem;text-align:center;position:relative;overflow:hidden;
+}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 40%,rgba(255,0,0,0.08) 0%,transparent 60%),radial-gradient(ellipse at 70% 60%,rgba(255,100,100,0.06) 0%,transparent 50%)}
+.hero h1{font-family:'Playfair Display',serif;font-size:3.2rem;font-weight:900;letter-spacing:5px;position:relative;text-shadow:0 2px 30px rgba(255,0,0,0.4)}
+.hero p{font-size:.85rem;opacity:.65;margin-top:.5rem;letter-spacing:3px;position:relative;font-weight:500}
+
+.stats-bar{display:grid;grid-template-columns:repeat(4,1fr);background:var(--ink);color:#fff}
+.stat{padding:1.2rem 1rem;text-align:center;border-right:1px solid #2A1515;transition:background .2s}
+.stat:last-child{border:none}
+.stat:hover{background:rgba(198,40,40,0.1)}
+.stat .num{font-family:'Playfair Display',serif;font-size:2rem;color:var(--red-glow);font-weight:700}
+.stat .lbl{font-size:.65rem;opacity:.5;letter-spacing:1.5px;margin-top:.2rem;font-weight:500}
+
+.tabs-wrap{background:var(--surface);border-bottom:2px solid var(--border);overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tabs{display:flex;max-width:900px;margin:0 auto;padding:0 1rem}
+.tab{
+  padding:.85rem 1.3rem;cursor:pointer;font-size:.8rem;letter-spacing:.5px;
+  border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap;
+  transition:all .2s;font-weight:600;color:var(--muted);position:relative;
+}
+.tab:hover{color:var(--ink);background:var(--card-hover)}
+.tab.active{border-bottom-color:var(--red);color:var(--red)}
+
+.panel{display:none;padding:2rem;max-width:1100px;margin:0 auto;animation:fadeIn .35s ease}
+.panel.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+.section-title{
+  font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;
+  color:var(--red-dark);margin-bottom:1.2rem;padding-bottom:.6rem;
+  border-bottom:2px solid var(--border);display:flex;align-items:center;gap:.6rem;
+}
+.section-title::before{content:'';width:4px;height:22px;background:var(--red);border-radius:2px;flex-shrink:0}
+
+.blood-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:2rem}
+@media(max-width:640px){.blood-grid{grid-template-columns:repeat(2,1fr)}}
+.blood-card{
+  background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-lg);
+  padding:1.2rem;text-align:center;transition:all .25s;position:relative;overflow:hidden;
+  box-shadow:var(--shadow-sm);
+}
+.blood-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--red);opacity:.5;transition:opacity .2s}
+.blood-card:hover{border-color:var(--red);transform:translateY(-3px);box-shadow:var(--shadow-lg)}
+.blood-card:hover::after{opacity:1}
+.blood-card .type{font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:900;color:var(--red)}
+.blood-card .units{font-size:.7rem;color:var(--muted);letter-spacing:1px;margin-top:.3rem}
+.blood-card .units strong{font-size:1.3rem;color:var(--ink);display:block;margin-bottom:2px}
+.status-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px;vertical-align:middle}
+.status-low{background:#E53935}.status-med{background:#F9A825}.status-ok{background:#2E7D32}
+
+.table-wrap{overflow-x:auto;border-radius:var(--radius-lg);border:1.5px solid var(--border);box-shadow:var(--shadow-sm);background:var(--surface);margin-bottom:1.5rem}
+table{width:100%;border-collapse:collapse;font-size:.82rem}
+thead{background:linear-gradient(135deg,var(--red-dark),#3A0008)}
+th{padding:.7rem 1rem;text-align:left;color:rgba(255,255,255,0.9);letter-spacing:.8px;font-size:.7rem;font-weight:600}
+td{padding:.65rem 1rem;border-bottom:1px solid var(--border);color:#444}
+tr:last-child td{border:none}
+tr:hover td{background:var(--card-hover)}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:600;letter-spacing:.3px}
+.badge-red{background:#FFE0E0;color:var(--red-dark)}
+.badge-green{background:#E0FFE8;color:var(--green)}
+.badge-yellow{background:#FFF3E0;color:var(--amber)}
+.badge-blue{background:#E3F2FD;color:var(--blue)}
+
+.form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:1.2rem}
+label{display:block;font-size:.7rem;letter-spacing:.8px;color:var(--muted);margin-bottom:4px;font-weight:600}
+input,select,textarea{
+  width:100%;padding:.55rem .8rem;border:1.5px solid var(--border);border-radius:8px;
+  font-family:'DM Sans',sans-serif;font-size:.82rem;background:var(--surface);color:var(--ink);transition:all .2s;
+}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px rgba(198,40,40,0.08)}
+.btn{
+  padding:.6rem 1.4rem;border:none;border-radius:8px;cursor:pointer;
+  font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;letter-spacing:.3px;transition:all .2s;
+}
+.btn-red{background:var(--red);color:#fff;box-shadow:0 2px 8px rgba(198,40,40,0.25)}
+.btn-red:hover{background:var(--red-dark);transform:translateY(-1px);box-shadow:0 4px 16px rgba(198,40,40,0.35)}
+.btn-red:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-outline{background:transparent;color:var(--red);border:1.5px solid var(--red)}
+.btn-outline:hover{background:var(--red);color:#fff}
+.btn-sm{padding:.35rem .8rem;font-size:.72rem}
+
+.alert{padding:.8rem 1.2rem;border-radius:8px;font-size:.8rem;margin-bottom:1rem;border-left:4px solid;animation:fadeIn .3s}
+.alert-success{background:#E8F5EE;border-color:var(--green);color:var(--green)}
+.alert-danger{background:#FFE8E8;border-color:var(--red);color:var(--red-dark)}
+.alert-info{background:#E8F0FF;border-color:var(--blue);color:var(--blue)}
+
+.console{border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-lg);border:1px solid rgba(40,0,0,0.2);margin-bottom:1.5rem}
+.console-bar{
+  background:linear-gradient(135deg,#1A0505,#2A0A0A);color:#FF9090;
+  padding:.7rem 1rem;font-size:.78rem;font-weight:600;letter-spacing:.5px;
+  display:flex;align-items:center;gap:10px;
+}
+.traffic{display:flex;gap:6px}
+.traffic span{width:11px;height:11px;border-radius:50%;border:1px solid rgba(0,0,0,0.15)}
+.t-red{background:#FF5F57}.t-yel{background:#FFBD2E}.t-grn{background:#28C840}
+#queryInput{
+  width:100%;background:#0D0303;color:#FFCCCC;border:none;padding:1rem 1.2rem;
+  font-family:'JetBrains Mono',monospace;font-size:.82rem;resize:vertical;min-height:90px;
+  border-bottom:1px solid #2A0808;line-height:1.7;
+}
+#queryInput:focus{outline:none}
+#queryInput::placeholder{color:#553333}
+.console-actions{background:#1A0505;padding:.6rem 1rem;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.run-btn{
+  padding:.5rem 1.3rem;background:var(--red);color:#fff;border:none;border-radius:6px;
+  font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:600;cursor:pointer;
+  transition:all .2s;letter-spacing:.3px;
+}
+.run-btn:hover{background:var(--red-glow);box-shadow:0 0 16px rgba(255,34,68,0.4)}
+.clear-btn{
+  padding:.5rem 1rem;background:transparent;color:#886666;border:1px solid #3A1A1A;
+  border-radius:6px;font-family:'DM Sans',sans-serif;font-size:.78rem;cursor:pointer;transition:all .2s;
+}
+.clear-btn:hover{color:#FFAAAA;border-color:#664444}
+#queryOutput{
+  background:#080202;color:#66FFAA;padding:1rem 1.2rem;
+  font-family:'JetBrains Mono',monospace;font-size:.75rem;
+  min-height:50px;max-height:340px;overflow-y:auto;white-space:pre-wrap;line-height:1.6;
+}
+#queryOutput::-webkit-scrollbar{width:6px}
+#queryOutput::-webkit-scrollbar-thumb{background:#3A1A1A;border-radius:3px}
+.query-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.2rem}
+.qchip{
+  padding:6px 14px;border:1.5px solid var(--border);border-radius:20px;
+  font-size:.72rem;font-weight:500;cursor:pointer;background:var(--surface);
+  color:var(--muted);font-family:'DM Sans',sans-serif;transition:all .2s;white-space:nowrap;
+}
+.qchip:hover{border-color:var(--red);color:var(--red);background:var(--card-hover)}
+.qchip.active{background:var(--red);color:#fff;border-color:var(--red)}
+.sql-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1.5rem}
+@media(max-width:700px){.sql-grid{grid-template-columns:1fr}}
+.sql-card{background:var(--ink);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-md)}
+.sql-card-head{background:#2A0A0A;color:#FF9090;padding:.55rem 1rem;font-size:.72rem;font-weight:600;letter-spacing:.8px}
+.sql-card-body{padding:.8rem 1rem;color:#FFD0D0;font-family:'JetBrains Mono',monospace;font-size:.75rem;line-height:1.8;white-space:pre;overflow-x:auto}
+.kw{color:#FF6688;font-weight:700}.tb{color:#FFAA44}.cm{color:#775555;font-style:italic}
+
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:1.5rem}
+@media(max-width:700px){.dash-grid{grid-template-columns:1fr}}
+
+.loading-row td{text-align:center;padding:2rem;color:var(--muted);font-size:.82rem}
+.spin{display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--red);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+@media(max-width:640px){
+  header{padding:0 1rem}
+  .logo{font-size:1.3rem}
+  nav button{padding:.4rem .7rem;font-size:.7rem}
+  .hero h1{font-size:2rem;letter-spacing:2px}
+  .panel{padding:1.2rem}
+  .sql-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><span class="logo-drop">🩸</span> Rakt<span>Setu</span></div>
+  <nav>
+    <button class="active" onclick="go('dashboard')">Dashboard</button>
+    <button onclick="go('donors')">Donors</button>
+    <button onclick="go('inventory')">Inventory</button>
+    <button onclick="go('requests')">Requests</button>
+    <button onclick="go('sql')">SQL <span class="tag">LIVE</span></button>
+    <button onclick="go('schema')">ER Diagram</button>
+  </nav>
+</header>
+
+<div class="hero">
+  <h1>🩸 RAKTSETU</h1>
+  <p>BLOOD BRIDGE MANAGEMENT SYSTEM &mdash; DBMS PROJECT</p>
+</div>
+
+<div class="stats-bar">
+  <div class="stat"><div class="num" id="s-donors">—</div><div class="lbl">TOTAL DONORS</div></div>
+  <div class="stat"><div class="num" id="s-units">—</div><div class="lbl">UNITS IN STOCK</div></div>
+  <div class="stat"><div class="num" id="s-requests">—</div><div class="lbl">OPEN REQUESTS</div></div>
+  <div class="stat"><div class="num" id="s-hospitals">—</div><div class="lbl">HOSPITALS</div></div>
+</div>
+
+<div class="tabs-wrap">
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab(this,'dashboard')">Dashboard</div>
+    <div class="tab" onclick="switchTab(this,'donors')">Donors</div>
+    <div class="tab" onclick="switchTab(this,'inventory')">Inventory</div>
+    <div class="tab" onclick="switchTab(this,'requests')">Requests</div>
+    <div class="tab" onclick="switchTab(this,'sql')">SQL Console</div>
+    <div class="tab" onclick="switchTab(this,'schema')">ER Diagram</div>
+  </div>
+</div>
+
+<!-- ========== DASHBOARD ========== -->
+<div class="panel active" id="panel-dashboard">
+  <div class="section-title">Blood inventory overview</div>
+  <div class="blood-grid" id="inventoryGrid"></div>
+  <div class="dash-grid">
+    <div>
+      <div class="section-title">Recent donations</div>
+      <div class="table-wrap">
+        <table><thead><tr><th>Donor</th><th>Blood</th><th>Date</th><th>Status</th></tr></thead>
+        <tbody id="recentDonations"><tr class="loading-row"><td colspan="4"><span class="spin"></span>Loading…</td></tr></tbody></table>
+      </div>
+    </div>
+    <div>
+      <div class="section-title">Urgent requests</div>
+      <div class="table-wrap">
+        <table><thead><tr><th>Hospital</th><th>Blood</th><th>Units</th><th>Priority</th></tr></thead>
+        <tbody id="urgentRequests"><tr class="loading-row"><td colspan="4"><span class="spin"></span>Loading…</td></tr></tbody></table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== DONORS ========== -->
+<div class="panel" id="panel-donors">
+  <div class="section-title">Register new donor</div>
+  <div id="donorAlert"></div>
+  <div class="form-grid">
+    <div><label>FULL NAME *</label><input id="d-name" placeholder="e.g. Arjun Sharma"/></div>
+    <div><label>AGE *</label><input id="d-age" type="number" placeholder="18–65"/></div>
+    <div><label>BLOOD GROUP *</label>
+      <select id="d-bg"><option value="">Select</option>
+        <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+        <option>O+</option><option>O-</option><option>AB+</option><option>AB-</option>
+      </select></div>
+    <div><label>PHONE</label><input id="d-phone" placeholder="+91 99999 00000"/></div>
+    <div><label>CITY</label><input id="d-city" placeholder="e.g. Pune"/></div>
+    <div><label>LAST DONATION</label><input id="d-last" type="date"/></div>
+  </div>
+  <button class="btn btn-red" id="donorSubmitBtn" onclick="addDonor()">+ Register donor</button>
+  <div style="margin-top:2rem">
+    <div class="section-title">All donors</div>
+    <div style="margin-bottom:1rem;display:flex;gap:8px;flex-wrap:wrap">
+      <input id="donorSearch" placeholder="Search by name or blood group..." oninput="filterDonors()" style="max-width:300px"/>
+      <select id="donorBgFilter" onchange="filterDonors()">
+        <option value="">All groups</option>
+        <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+        <option>O+</option><option>O-</option><option>AB+</option><option>AB-</option>
+      </select>
+    </div>
+    <div class="table-wrap">
+      <table><thead><tr><th>ID</th><th>Name</th><th>Age</th><th>Blood</th><th>Phone</th><th>City</th><th>Last donated</th><th>Action</th></tr></thead>
+      <tbody id="donorTable"><tr class="loading-row"><td colspan="8"><span class="spin"></span>Loading…</td></tr></tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- ========== INVENTORY ========== -->
+<div class="panel" id="panel-inventory">
+  <div class="section-title">Blood inventory management</div>
+  <div id="invAlert"></div>
+  <div class="form-grid">
+    <div><label>BLOOD GROUP</label>
+      <select id="inv-bg">
+        <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+        <option>O+</option><option>O-</option><option>AB+</option><option>AB-</option>
+      </select></div>
+    <div><label>UNITS TO ADD *</label><input id="inv-units" type="number" placeholder="1–50"/></div>
+    <div><label>EXPIRY DATE *</label><input id="inv-expiry" type="date"/></div>
+    <div><label>SOURCE (DONOR ID)</label><input id="inv-donor" placeholder="e.g. D001"/></div>
+  </div>
+  <button class="btn btn-red" id="invSubmitBtn" onclick="addInventory()">+ Add to inventory</button>
+  <div style="margin-top:2rem">
+    <div class="section-title">Current stock</div>
+    <div class="table-wrap">
+      <table><thead><tr><th>Inv ID</th><th>Blood group</th><th>Units</th><th>Expiry</th><th>Donor</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody id="invTable"><tr class="loading-row"><td colspan="7"><span class="spin"></span>Loading…</td></tr></tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- ========== REQUESTS ========== -->
+<div class="panel" id="panel-requests">
+  <div class="section-title">New blood request</div>
+  <div id="reqAlert"></div>
+  <div class="form-grid">
+    <div><label>HOSPITAL NAME *</label><input id="r-hospital" placeholder="e.g. Ruby Hall Clinic" list="hospitalList"/><datalist id="hospitalList"></datalist></div>
+    <div><label>PATIENT NAME *</label><input id="r-patient" placeholder="Patient name"/></div>
+    <div><label>BLOOD GROUP</label>
+      <select id="r-bg">
+        <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+        <option>O+</option><option>O-</option><option>AB+</option><option>AB-</option>
+      </select></div>
+    <div><label>UNITS REQUIRED</label><input id="r-units" type="number" placeholder="1–10" value="1"/></div>
+    <div><label>PRIORITY</label>
+      <select id="r-priority"><option>CRITICAL</option><option>HIGH</option><option>NORMAL</option></select></div>
+    <div><label>CONTACT</label><input id="r-contact" placeholder="Doctor's phone"/></div>
+  </div>
+  <button class="btn btn-red" id="reqSubmitBtn" onclick="addRequest()">📋 Submit request</button>
+  <div style="margin-top:2rem">
+    <div class="section-title">All requests</div>
+    <div class="table-wrap">
+      <table><thead><tr><th>ID</th><th>Hospital</th><th>Patient</th><th>Blood</th><th>Units</th><th>Priority</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody id="reqTable"><tr class="loading-row"><td colspan="8"><span class="spin"></span>Loading…</td></tr></tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SQL CONSOLE ========== -->
+<div class="panel" id="panel-sql">
+  <div class="section-title">Live SQL console</div>
+  <p style="font-size:.82rem;color:var(--muted);margin-bottom:1.2rem">
+    Execute real SQL queries against your <strong>MySQL database</strong> via Flask.
+    SELECT returns a table. INSERT / UPDATE / DELETE shows rows affected.
+  </p>
+  <div class="query-chips" id="queryChips"></div>
+  <div class="console">
+    <div class="console-bar">
+      <div class="traffic"><span class="t-red"></span><span class="t-yel"></span><span class="t-grn"></span></div>
+      SQL Console — MySQL via Flask API
+    </div>
+    <textarea id="queryInput" placeholder="-- Type your SQL query here...
+SELECT * FROM donors;">SELECT * FROM donors;</textarea>
+    <div class="console-actions">
+      <button class="run-btn" onclick="runSQL()">▶ Run query</button>
+      <button class="clear-btn" onclick="clearQ()">Clear</button>
+      <span style="font-size:.7rem;color:#553333;margin-left:auto">Powered by MySQL · Queries run on your actual database</span>
+    </div>
+    <div id="queryOutput">-- Results will appear here --</div>
+  </div>
+  <div class="sql-grid">
+    <div class="sql-card">
+      <div class="sql-card-head">TABLE: donors</div>
+      <div class="sql-card-body"><span class="kw">CREATE TABLE</span> <span class="tb">donors</span> (
+  donor_id    <span class="kw">VARCHAR</span>(10) <span class="kw">PRIMARY KEY</span>,
+  name        <span class="kw">VARCHAR</span>(100) <span class="kw">NOT NULL</span>,
+  age         <span class="kw">INT</span> <span class="kw">CHECK</span>(age BETWEEN 18 AND 65),
+  blood_group <span class="kw">VARCHAR</span>(5) <span class="kw">NOT NULL</span>,
+  phone       <span class="kw">VARCHAR</span>(15),
+  city        <span class="kw">VARCHAR</span>(50),
+  last_donated <span class="kw">DATE</span>
+);</div>
+    </div>
+    <div class="sql-card">
+      <div class="sql-card-head">TABLE: blood_inventory</div>
+      <div class="sql-card-body"><span class="kw">CREATE TABLE</span> <span class="tb">blood_inventory</span> (
+  inv_id      <span class="kw">VARCHAR</span>(10) <span class="kw">PRIMARY KEY</span>,
+  blood_group <span class="kw">VARCHAR</span>(5) <span class="kw">NOT NULL</span>,
+  units       <span class="kw">INT</span> <span class="kw">CHECK</span>(units &gt;= 0),
+  expiry_date <span class="kw">DATE</span>,
+  donor_id    <span class="kw">VARCHAR</span>(10),
+  <span class="kw">FOREIGN KEY</span>(donor_id)
+    <span class="kw">REFERENCES</span> <span class="tb">donors</span>(donor_id)
+);</div>
+    </div>
+    <div class="sql-card">
+      <div class="sql-card-head">TABLE: blood_requests</div>
+      <div class="sql-card-body"><span class="kw">CREATE TABLE</span> <span class="tb">blood_requests</span> (
+  req_id      <span class="kw">VARCHAR</span>(10) <span class="kw">PRIMARY KEY</span>,
+  hospital_id <span class="kw">VARCHAR</span>(10),
+  patient     <span class="kw">VARCHAR</span>(100),
+  blood_group <span class="kw">VARCHAR</span>(5),
+  units       <span class="kw">INT</span>,
+  priority    <span class="kw">VARCHAR</span>(10),
+  status      <span class="kw">VARCHAR</span>(10) <span class="kw">DEFAULT</span> 'PENDING',
+  contact     <span class="kw">VARCHAR</span>(15),
+  <span class="kw">FOREIGN KEY</span>(hospital_id)
+    <span class="kw">REFERENCES</span> <span class="tb">hospitals</span>(hospital_id)
+);</div>
+    </div>
+    <div class="sql-card">
+      <div class="sql-card-head">TABLE: hospitals</div>
+      <div class="sql-card-body"><span class="kw">CREATE TABLE</span> <span class="tb">hospitals</span> (
+  hospital_id <span class="kw">VARCHAR</span>(10) <span class="kw">PRIMARY KEY</span>,
+  name        <span class="kw">VARCHAR</span>(100),
+  city        <span class="kw">VARCHAR</span>(50),
+  contact     <span class="kw">VARCHAR</span>(15)
+);</div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== ER DIAGRAM ========== -->
+<div class="panel" id="panel-schema">
+  <div class="section-title">Entity-relationship diagram</div>
+  <div style="background:#0f172a;border-radius:var(--radius-lg);padding:2rem;overflow-x:auto">
+    <div id="erd-container"><p style="color:#886666;text-align:center;padding:2rem">Loading ER diagram…</p></div>
+  </div>
+  <div style="margin-top:1rem;font-size:.82rem;color:var(--muted);line-height:1.8;background:var(--surface);border-radius:var(--radius);padding:1rem;border:1px solid var(--border)">
+    <strong>Relationships:</strong><br>
+    DONORS ──(donates)──▶ BLOOD_INVENTORY &nbsp;(One Donor → Many inventory entries)<br>
+    HOSPITALS ──(makes)──▶ BLOOD_REQUESTS &nbsp;(One Hospital → Many Requests)<br><br>
+    <strong>Constraints:</strong> NOT NULL on name, blood_group &nbsp;|&nbsp; CHECK age BETWEEN 18 AND 65<br>
+    <strong>Indexes:</strong> idx_donor_bg · idx_inv_bg · idx_req_status
+  </div>
+</div>
+
+<!-- ===== MERMAID ER DIAGRAM ===== -->
+<script type="module">
+import mermaid from 'https://esm.sh/mermaid@11/dist/mermaid.esm.min.mjs';
+mermaid.initialize({
+  startOnLoad: false, theme: 'base',
+  themeVariables: {
+    darkMode: true, fontSize: '12px', fontFamily: '"DM Sans",sans-serif',
+    lineColor: '#8a71f8', textColor: '#FFCCCC',
+    primaryColor: '#4A0012', primaryBorderColor: '#FF6688', primaryTextColor: '#000000',
+    secondaryColor: '#1A0808', tertiaryColor: '#FFFFFF',
+  }
+});
+try {
+  const { svg } = await mermaid.render('erd-svg', `erDiagram
+    DONORS ||--o{ BLOOD_INVENTORY : donates
+    DONORS {
+      varchar donor_id PK
+      varchar name
+      int age
+      varchar blood_group
+      varchar phone
+      varchar city
+      date last_donated
+    }
+    BLOOD_INVENTORY ||--o{ BLOOD_REQUESTS : fulfills
+    BLOOD_INVENTORY {
+      varchar inv_id PK
+      varchar blood_group
+      int units
+      date expiry_date
+      varchar donor_id FK
+    }
+    HOSPITALS ||--o{ BLOOD_REQUESTS : makes
+    HOSPITALS {
+      varchar hospital_id PK
+      varchar name
+      varchar city
+      varchar contact
+    }
+    BLOOD_REQUESTS {
+      varchar req_id PK
+      varchar hospital_id FK
+      varchar patient
+      varchar blood_group
+      int units
+      varchar priority
+      varchar status
+      varchar contact
+    }`);
+  document.getElementById('erd-container').innerHTML = svg;
+} catch(e) {
+  document.getElementById('erd-container').innerHTML =
+    '<p style="color:#886666;text-align:center;padding:2rem">ER diagram unavailable (no internet)</p>';
+}
+</script>
+
+<script>
+// ════════════════════════════════════════════════════════
+//  API — relative paths, works on any host/port
+// ════════════════════════════════════════════════════════
+const API = '';   // Flask serves index.html, so same origin = no hardcoded URL needed
+
+// ════════════════════════════════════════════════════════
+//  FETCH HELPERS
+// ════════════════════════════════════════════════════════
+async function apiFetch(path) {
+  try {
+    const res = await fetch(API + path);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+      return { _error: err.error || `HTTP ${res.status}` };
+    }
+    return await res.json();
+  } catch (e) {
+    return { _error: 'Network error — is Flask running? Run: python app.py' };
+  }
+}
+
+async function apiPost(path, body) {
+  try {
+    const res = await fetch(API + path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+    return data;
+  } catch (e) {
+    return { error: 'Network error — is Flask running?' };
+  }
+}
+
+async function apiPatch(path, body) {
+  try {
+    const res = await fetch(API + path, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    return await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+  } catch (e) {
+    return { error: e.message };
+  }
+}
+
+async function apiDelete(path) {
+  try {
+    const res = await fetch(API + path, { method: 'DELETE' });
+    return await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+  } catch (e) {
+    return { error: e.message };
+  }
+}
+
+// ════════════════════════════════════════════════════════
+//  HELPERS
+// ════════════════════════════════════════════════════════
+const $ = id => document.getElementById(id);
+
+function showAlert(elId, msg, type = 'success') {
+  $(elId).innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
+  setTimeout(() => { if ($(elId)) $(elId).innerHTML = ''; }, 5000);
+}
+
+function loadingRow(cols) {
+  return `<tr class="loading-row"><td colspan="${cols}"><span class="spin"></span>Loading from MySQL…</td></tr>`;
+}
+
+function errRow(cols, msg) {
+  return `<tr class="loading-row"><td colspan="${cols}" style="color:var(--red-dark)">⚠ ${msg}</td></tr>`;
+}
+
+// ════════════════════════════════════════════════════════
+//  STATS BAR
+// ════════════════════════════════════════════════════════
+async function loadStats() {
+  const d = await apiFetch('/api/stats');
+  if (d._error) return;
+  $('s-donors').textContent    = d.donors;
+  $('s-units').textContent     = Number(d.units).toLocaleString();
+  $('s-requests').textContent  = d.pending;
+  $('s-hospitals').textContent = d.hospitals;
+}
+
+// ════════════════════════════════════════════════════════
+//  DASHBOARD
+// ════════════════════════════════════════════════════════
+async function loadDashboard() {
+  loadStats();
+
+  const inv = await apiFetch('/api/inventory/summary');
+  const groups = ['A+','A-','B+','B-','O+','O-','AB+','AB-'];
+  const map = {};
+  if (!inv._error) inv.forEach(r => { map[r.blood_group] = Number(r.units); });
+  $('inventoryGrid').innerHTML = groups.map(g => {
+    const u   = map[g] || 0;
+    const cls = u < 50 ? 'status-low' : u < 100 ? 'status-med' : 'status-ok';
+    const lbl = u < 50 ? 'LOW' : u < 100 ? 'MED' : 'OK';
+    return `<div class="blood-card">
+      <div class="type">${g}</div>
+      <div class="units"><strong>${u}</strong>UNITS <span class="status-dot ${cls}"></span>${lbl}</div>
+    </div>`;
+  }).join('');
+
+  const donors = await apiFetch('/api/donors');
+  if (donors._error) {
+    $('recentDonations').innerHTML = errRow(4, donors._error);
+  } else {
+    const recent = [...donors]
+      .filter(d => d.last_donated)
+      .sort((a, b) => b.last_donated.localeCompare(a.last_donated))
+      .slice(0, 5);
+    $('recentDonations').innerHTML = recent.length
+      ? recent.map(d => `<tr>
+          <td style="font-weight:600">${d.name}</td>
+          <td><span class="badge badge-red">${d.blood_group}</span></td>
+          <td>${d.last_donated || 'N/A'}</td>
+          <td><span class="badge badge-green">VERIFIED</span></td>
+        </tr>`).join('')
+      : `<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:1.5rem">No donors yet</td></tr>`;
+  }
+
+  const reqs = await apiFetch('/api/requests');
+  if (reqs._error) {
+    $('urgentRequests').innerHTML = errRow(4, reqs._error);
+  } else {
+    const urgent = reqs.filter(r => r.priority === 'CRITICAL' || r.status === 'PENDING').slice(0, 5);
+    $('urgentRequests').innerHTML = urgent.length
+      ? urgent.map(r => {
+          const pb = r.priority === 'CRITICAL' ? 'badge-red' : r.priority === 'HIGH' ? 'badge-yellow' : 'badge-green';
+          return `<tr>
+            <td>${r.hospital_name || '—'}</td>
+            <td><span class="badge badge-red">${r.blood_group}</span></td>
+            <td>${r.units}</td>
+            <td><span class="badge ${pb}">${r.priority}</span></td>
+          </tr>`;
+        }).join('')
+      : `<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:1.5rem">No urgent requests</td></tr>`;
+  }
+}
+
+// ════════════════════════════════════════════════════════
+//  DONORS
+// ════════════════════════════════════════════════════════
+let allDonors = [];
+
+async function loadDonors() {
+  $('donorTable').innerHTML = loadingRow(8);
+  const data = await apiFetch('/api/donors');
+  if (data._error) {
+    $('donorTable').innerHTML = errRow(8, data._error);
+    return;
+  }
+  allDonors = data;
+  renderDonorTable(allDonors);
+  // Populate hospital datalist while we're at it
+  loadHospitals();
+}
+
+function renderDonorTable(list) {
+  $('donorTable').innerHTML = list.length
+    ? list.map(d => `<tr>
+        <td><code style="font-size:.75rem;color:var(--muted)">${d.donor_id}</code></td>
+        <td style="font-weight:600">${d.name}</td>
+        <td>${d.age}</td>
+        <td><span class="badge badge-red">${d.blood_group}</span></td>
+        <td>${d.phone || '—'}</td>
+        <td>${d.city || '—'}</td>
+        <td>${d.last_donated || 'N/A'}</td>
+        <td><button class="btn btn-outline btn-sm" onclick="deleteDonor('${d.donor_id}')">✕ Delete</button></td>
+      </tr>`).join('')
+    : `<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:2rem">No donors found</td></tr>`;
+}
+
+function filterDonors() {
+  const q  = $('donorSearch').value.toLowerCase();
+  const bg = $('donorBgFilter').value;
+  renderDonorTable(allDonors.filter(d =>
+    (!q  || d.name.toLowerCase().includes(q) || d.blood_group.toLowerCase().includes(q)) &&
+    (!bg || d.blood_group === bg)
+  ));
+}
+
+async function addDonor() {
+  const name  = $('d-name').value.trim();
+  const age   = parseInt($('d-age').value);
+  const bg    = $('d-bg').value;
+  const phone = $('d-phone').value.trim();
+  const city  = $('d-city').value.trim();
+  const last  = $('d-last').value || null;
+
+  if (!name || !bg || !age) { showAlert('donorAlert', 'Please fill Name, Age, and Blood Group', 'danger'); return; }
+  if (age < 18 || age > 65) { showAlert('donorAlert', 'Age must be between 18–65', 'danger'); return; }
+
+  const btn = $('donorSubmitBtn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+
+  const res = await apiPost('/api/donors', { name, age, blood_group: bg, phone, city, last_donated: last });
+  btn.disabled = false; btn.textContent = '+ Register donor';
+
+  if (res && res.success) {
+    showAlert('donorAlert', `✅ Donor <strong>${name}</strong> registered as <strong>${res.donor_id}</strong>.`);
+    ['d-name','d-age','d-phone','d-city','d-last'].forEach(x => $(x).value = '');
+    $('d-bg').value = '';
+    loadDonors(); loadStats();
+  } else {
+    showAlert('donorAlert', `❌ ${res?.error || 'Unknown error'}`, 'danger');
+  }
+}
+
+async function deleteDonor(did) {
+  if (!confirm(`Delete donor ${did}? Their inventory references will be set to NULL.`)) return;
+  const res = await apiDelete(`/api/donors/${did}`);
+  if (res && res.success) {
+    showAlert('donorAlert', `🗑 Donor ${did} deleted.`);
+    loadDonors(); loadStats();
+  } else {
+    showAlert('donorAlert', `❌ ${res?.error || 'Delete failed'}`, 'danger');
+  }
+}
+
+// ════════════════════════════════════════════════════════
+//  INVENTORY
+// ════════════════════════════════════════════════════════
+async function loadInventory() {
+  $('invTable').innerHTML = loadingRow(7);
+  const data = await apiFetch('/api/inventory');
+  if (data._error) { $('invTable').innerHTML = errRow(7, data._error); return; }
+  if (!data.length) {
+    $('invTable').innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:2rem">No inventory records</td></tr>`;
+    return;
+  }
+  $('invTable').innerHTML = data.map(i => {
+    const days = i.expiry_date
+      ? Math.ceil((new Date(i.expiry_date) - new Date()) / 864e5)
+      : 999;
+    const st  = days < 14 ? 'badge-red' : days < 30 ? 'badge-yellow' : 'badge-green';
+    const stl = days < 14 ? 'EXPIRING'  : days < 30 ? 'SOON'         : 'VALID';
+    return `<tr>
+      <td><code style="font-size:.75rem;color:var(--muted)">${i.inv_id}</code></td>
+      <td><span class="badge badge-red">${i.blood_group}</span></td>
+      <td style="font-weight:600">${i.units} units</td>
+      <td>${i.expiry_date || '—'}</td>
+      <td><code style="font-size:.75rem">${i.donor_id || '—'}</code></td>
+      <td><span class="badge ${st}">${stl}</span></td>
+      <td><button class="btn btn-outline btn-sm" onclick="dispenseBlood('${i.inv_id}')">Dispense</button></td>
+    </tr>`;
+  }).join('');
+}
+
+async function addInventory() {
+  const bg    = $('inv-bg').value;
+  const units = parseInt($('inv-units').value);
+  const exp   = $('inv-expiry').value;
+  const donor = $('inv-donor').value.trim() || null;
+
+  if (!units || !exp) { showAlert('invAlert', 'Fill Units and Expiry Date', 'danger'); return; }
+
+  const btn = $('invSubmitBtn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  const res = await apiPost('/api/inventory', { blood_group: bg, units, expiry_date: exp, donor_id: donor });
+  btn.disabled = false; btn.textContent = '+ Add to inventory';
+
+  if (res && res.success) {
+    showAlert('invAlert', `✅ Added <strong>${units} units of ${bg}</strong> — ID: <strong>${res.inv_id}</strong>`);
+    $('inv-units').value = ''; $('inv-expiry').value = ''; $('inv-donor').value = '';
+    loadInventory(); loadStats();
+  } else {
+    showAlert('invAlert', `❌ ${res?.error || 'Error'}`, 'danger');
+  }
+}
+
+async function dispenseBlood(inv_id) {
+  const res = await apiPost(`/api/inventory/${inv_id}/dispense`, {});
+  if (res && res.success) {
+    showAlert('invAlert', `✅ 1 unit dispensed from <strong>${inv_id}</strong>.`);
+    loadInventory(); loadStats();
+  } else {
+    showAlert('invAlert', `❌ ${res?.error || 'Dispense failed'}`, 'danger');
+  }
+}
+
+// ════════════════════════════════════════════════════════
+//  REQUESTS
+// ════════════════════════════════════════════════════════
+async function loadRequests() {
+  $('reqTable').innerHTML = loadingRow(8);
+  const data = await apiFetch('/api/requests');
+  if (data._error) { $('reqTable').innerHTML = errRow(8, data._error); return; }
+  if (!data.length) {
+    $('reqTable').innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:2rem">No requests found</td></tr>`;
+    return;
+  }
+  $('reqTable').innerHTML = data.map(r => {
+    const pb = r.priority === 'CRITICAL' ? 'badge-red' : r.priority === 'HIGH' ? 'badge-yellow' : 'badge-green';
+    const sb = r.status   === 'PENDING'  ? 'badge-yellow'
+             : r.status   === 'APPROVED' ? 'badge-blue'
+             : 'badge-green';
+    return `<tr>
+      <td><code style="font-size:.75rem;color:var(--muted)">${r.req_id}</code></td>
+      <td>${r.hospital_name || '—'}</td>
+      <td>${r.patient}</td>
+      <td><span class="badge badge-red">${r.blood_group}</span></td>
+      <td>${r.units}</td>
+      <td><span class="badge ${pb}">${r.priority}</span></td>
+      <td><span class="badge ${sb}">${r.status}</span></td>
+      <td style="display:flex;gap:4px;flex-wrap:wrap">
+        ${r.status === 'PENDING'  ? `<button class="btn btn-outline btn-sm" onclick="changeReqStatus('${r.req_id}','APPROVED')">Approve</button>` : ''}
+        ${r.status === 'APPROVED' ? `<button class="btn btn-red btn-sm"     onclick="changeReqStatus('${r.req_id}','FULFILLED')">Fulfill</button>` : ''}
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+async function loadHospitals() {
+  const data = await apiFetch('/api/hospitals');
+  if (data._error) return;
+  const dl = $('hospitalList');
+  if (dl) dl.innerHTML = data.map(h => `<option value="${h.name}">`).join('');
+}
+
+async function addRequest() {
+  const hospital = $('r-hospital').value.trim();
+  const patient  = $('r-patient').value.trim();
+  const bg       = $('r-bg').value;
+  const units    = parseInt($('r-units').value) || 1;
+  const priority = $('r-priority').value;
+  const contact  = $('r-contact').value.trim();
+
+  if (!hospital || !patient) { showAlert('reqAlert', 'Fill Hospital and Patient name', 'danger'); return; }
+
+  const btn = $('reqSubmitBtn');
+  btn.disabled = true; btn.textContent = 'Submitting…';
+  const res = await apiPost('/api/requests', { hospital, patient, blood_group: bg, units, priority, contact });
+  btn.disabled = false; btn.textContent = '📋 Submit request';
+
+  if (res && res.success) {
+    showAlert('reqAlert', `✅ Request <strong>${res.req_id}</strong> submitted — Status: PENDING`);
+    ['r-hospital','r-patient','r-contact'].forEach(x => $(x).value = '');
+    $('r-units').value = '1';
+    loadRequests(); loadStats();
+  } else {
+    showAlert('reqAlert', `❌ ${res?.error || 'Error'}`, 'danger');
+  }
+}
+
+async function changeReqStatus(req_id, status) {
+  const res = await apiPatch(`/api/requests/${req_id}/status`, { status });
+  if (res && res.success) {
+    showAlert('reqAlert', `✅ Request <strong>${req_id}</strong> → <strong>${status}</strong>`);
+    loadRequests(); loadStats();
+  } else {
+    showAlert('reqAlert', `❌ ${res?.error || 'Update failed'}`, 'danger');
+  }
+}
+
+// ════════════════════════════════════════════════════════
+//  SQL CONSOLE
+// ════════════════════════════════════════════════════════
+const QUERIES = [
+  {label:'1. All donors',           sql:'SELECT * FROM donors;'},
+  {label:'2. All inventory',        sql:'SELECT * FROM blood_inventory;'},
+  {label:'3. All hospitals',        sql:'SELECT * FROM hospitals;'},
+  {label:'4. Pending requests',     sql:"SELECT * FROM blood_requests WHERE status = 'PENDING';"},
+  {label:'5. O+ donors',            sql:"SELECT name, phone, city FROM donors WHERE blood_group = 'O+';"},
+  {label:'6. Units per group',      sql:'SELECT blood_group, SUM(units) AS total_units FROM blood_inventory GROUP BY blood_group ORDER BY total_units DESC;'},
+  {label:'7. Donors per group',     sql:'SELECT blood_group, COUNT(*) AS donor_count FROM donors GROUP BY blood_group ORDER BY donor_count DESC;'},
+  {label:'8. Avg age per group',    sql:'SELECT blood_group, ROUND(AVG(age),1) AS avg_age FROM donors GROUP BY blood_group;'},
+  {label:'9. Donor + Inventory',    sql:'SELECT d.name, d.blood_group, bi.units, bi.expiry_date FROM donors d JOIN blood_inventory bi ON d.donor_id = bi.donor_id;'},
+  {label:'10. Requests + Hospital', sql:'SELECT br.req_id, h.name AS hospital, br.patient, br.blood_group, br.units, br.priority, br.status FROM blood_requests br JOIN hospitals h ON br.hospital_id = h.hospital_id;'},
+  {label:'11. Critical PENDING',    sql:"SELECT br.req_id, h.name AS hospital, br.patient, br.blood_group, br.units FROM blood_requests br JOIN hospitals h ON br.hospital_id = h.hospital_id WHERE br.priority = 'CRITICAL' AND br.status = 'PENDING';"},
+  {label:'12. Stock < 100 (HAVING)',sql:'SELECT blood_group, SUM(units) AS total FROM blood_inventory GROUP BY blood_group HAVING total < 100;'},
+  {label:'13. Donated last 6 mo',   sql:'SELECT name, blood_group, last_donated FROM donors WHERE last_donated >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH);'},
+  {label:'14. Expiring in 30 days', sql:'SELECT inv_id, blood_group, units, expiry_date FROM blood_inventory WHERE expiry_date <= DATE_ADD(CURDATE(), INTERVAL 30 DAY);'},
+  {label:'15. Units requested/grp', sql:'SELECT blood_group, SUM(units) AS units_requested FROM blood_requests GROUP BY blood_group ORDER BY units_requested DESC;'},
+  {label:'16. Hospitals > 1 req',   sql:'SELECT hospital_id, COUNT(*) AS total_requests FROM blood_requests GROUP BY hospital_id HAVING total_requests > 1;'},
+  {label:'17. Donors from Pune',    sql:"SELECT name, age, blood_group, phone FROM donors WHERE city = 'Pune';"},
+  {label:'18. Fulfilled + hospital',sql:"SELECT br.req_id, h.name AS hospital, br.patient, br.blood_group, br.units FROM blood_requests br JOIN hospitals h ON br.hospital_id = h.hospital_id WHERE br.status = 'FULFILLED';"},
+  {label:'19. Inventory + donor',   sql:'SELECT bi.blood_group, bi.units, d.name AS donor_name, d.city FROM blood_inventory bi LEFT JOIN donors d ON bi.donor_id = d.donor_id ORDER BY bi.blood_group;'},
+  {label:'20. Above avg units',     sql:'SELECT inv_id, blood_group, units FROM blood_inventory WHERE units > (SELECT AVG(units) FROM blood_inventory);'},
+  {label:'21. O- donors (rare)',    sql:"SELECT * FROM donors WHERE blood_group = 'O-';"},
+  {label:'22. Match donor-request', sql:"SELECT d.name AS donor, r.patient, d.blood_group, h.name AS hospital FROM donors d JOIN blood_requests r ON d.blood_group = r.blood_group JOIN hospitals h ON r.hospital_id = h.hospital_id;"},
+];
+
+function renderChips() {
+  $('queryChips').innerHTML = QUERIES.map((q, i) =>
+    `<button class="qchip" onclick="loadQuery(${i})">${q.label}</button>`
+  ).join('');
+}
+renderChips();
+
+function loadQuery(i) {
+  $('queryInput').value = QUERIES[i].sql;
+  document.querySelectorAll('.qchip').forEach((c, j) => c.classList.toggle('active', j === i));
+}
+
+async function runSQL() {
+  const q = $('queryInput').value.trim();
+  if (!q) return;
+  $('queryOutput').textContent = '⏳ Running query on MySQL…';
+
+  const res = await apiPost('/api/sql', { query: q });
+
+  if (!res || res.error) {
+    $('queryOutput').textContent = '❌ Error: ' + (res?.error || 'No response from server');
+    return;
+  }
+  if (res.message) {
+    $('queryOutput').textContent = '✅ ' + res.message;
+    loadStats();
+    return;
+  }
+
+  // SELECT result — render as aligned text table
+  const cols = res.columns || [];
+  const rows = res.rows   || [];
+
+  if (!cols.length || !rows.length) {
+    $('queryOutput').textContent = '✅ Query OK — 0 rows returned.';
+    return;
+  }
+
+  const widths = cols.map((c, ci) => {
+    const vals = rows.map(r => String(r[c] === null || r[c] === undefined ? 'NULL' : r[c]).length);
+    return Math.max(c.length, ...vals);
+  });
+
+  const header = cols.map((c, i) => c.padEnd(widths[i])).join(' │ ');
+  const sep    = widths.map(w => '─'.repeat(w)).join('─┼─');
+  const body   = rows.map(row =>
+    cols.map((c, i) => {
+      const val = row[c] === null || row[c] === undefined ? 'NULL' : String(row[c]);
+      return val.padEnd(widths[i]);
+    }).join(' │ ')
+  );
+
+  $('queryOutput').textContent = [header, sep, ...body,
+    `\n✅ ${rows.length} row${rows.length !== 1 ? 's' : ''} returned`
+  ].join('\n');
+}
+
+function clearQ() {
+  $('queryInput').value = '';
+  $('queryOutput').textContent = '-- Results will appear here --';
+  document.querySelectorAll('.qchip').forEach(c => c.classList.remove('active'));
+}
+
+// ════════════════════════════════════════════════════════
+//  TAB SWITCHING
+// ════════════════════════════════════════════════════════
+const TAB_NAMES = ['dashboard','donors','inventory','requests','sql','schema'];
+
+function switchTab(el, name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  $('panel-' + name).classList.add('active');
+  const idx = TAB_NAMES.indexOf(name);
+  if (idx >= 0) document.querySelectorAll('nav button')[idx]?.classList.add('active');
+  if (name === 'dashboard') loadDashboard();
+  if (name === 'donors')    loadDonors();
+  if (name === 'inventory') loadInventory();
+  if (name === 'requests')  { loadRequests(); loadHospitals(); }
+}
+
+function go(name) {
+  const idx = TAB_NAMES.indexOf(name);
+  if (idx >= 0) switchTab(document.querySelectorAll('.tab')[idx], name);
+}
+
+// ════════════════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════════════════
+loadStats();
+loadDashboard();
+</script>
+</body>
+</html>
